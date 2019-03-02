@@ -1,0 +1,12 @@
+#Cypher Language
+LOAD CSV FROM 'server_path_file' as line
+CREATE (:Busao {
+  server_date: line[0],
+  avl_date: line[1],
+  line: line[2],
+  lng: line[3],
+  lat: line[4],
+  bus_prefix: line[5],
+  event: line[6],
+  stop: line[7]
+})
