@@ -1,6 +1,6 @@
 #Cypher Language
 LOAD CSV FROM 'server_path_file' as line
-CREATE (:Busao {
+CREATE (bus:Busao {
   server_date: line[0],
   avl_date: line[1],
   line: line[2],
