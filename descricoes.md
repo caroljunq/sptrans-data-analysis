@@ -131,21 +131,55 @@ a distância está dentro de x metros?
 # Ferramentas big data 2019
 Como as ferramentas de big data lidam com dados geográficos
 
-## Spark
-* Geospark
-* Leio de um data source e salvo em outro/mesmo formato
-
-### Links importantes
-* https://br.hortonworks.com/blog/magellan-geospatial-analytics-in-spark/
-
-## Big Query (Google)
-* Conectado com streaming, cloud storage e outros meios de storage
-* Tem as mesmas features do POSTGIS
-* Fazer big query funcionar
-
 ### Links importantes
 * https://cloud.google.com/bigquery/docs/gis-analyst-start
 * https://cloud.google.com/bigquery/
 nGalera, precisava de uma ajuda pra ver se estou pensando de um jeito bacana. Meu problema: tenho dados historicos de ônibus em .csv, vou extrair méit
 # Leituras extras
 * https://eng.uber.com/tech-stack-part-one/?fbclid=IwAR3_CrFTF2Oq9H_mNIbG2MYZ4Iu4Ie79bWAy0TDR0cVkHGmmFwXxhcj6b2Q
+
+
+## Big Query (Google)
+* Conectado cloud storage ou google drive
+* Tem as mesmas features do POSTGIS, mesma queries geográficas
+* Criar projeto, adiciona bigquery, cria fonte de dados, cria tabela
+* Tem visualização de dados (mapa)
+* Conecta com o data studio
+* Integra-se com nodejs, python
+* Preço Big Query: $5 per TB First terabyte (1 TB) per month is free e 0,0020 per GB Storage
+* Preço One: 200GB R$9,99/mes
+* Preço Cloud Storage: $0.026 GB
+
+### Links importantes
+* https://cloud.google.com/bigquery/docs/gis-intro
+* https://cloud.google.com/bigquery/docs/gis-analyst-start
+* https://cloud.google.com/bigquery/external-data-drive?hl=pt-br
+  * https://cloud.google.com/bigquery/docs/reference/standard-sql/geography_functions
+* https://cloud.google.com/bigquery/docs/gis-data
+
+## Spark
+* Geospark
+* Leio de um data source e salvo em outro/mesmo formato
+* Conector com Python e mongo
+* Processar dados
+* Possui as mesmas queries geográficas que o SQL  
+* df = sqlContext.read
+       .format("csv")
+       .option("header", "true")
+       .load("./\*.csv")
+
+### Links importantes
+* https://br.hortonworks.com/blog/magellan-geospatial-analytics-in-spark/
+* https://community.hortonworks.com/questions/47988/reading-multiple-csv-files-without-headers-using-s.html
+
+## Athena
+* Conexão com o S3
+* Preço: 5,00 USD por TB de dados escaneados
+* Mesmas queries geográficas do SQL
+* Preço S3: 0,023 USD por GB
+
+### Links importantes
+* https://aws.amazon.com/pt/athena/pricing/
+* https://aws.amazon.com/pt/blogs/big-data/analyzing-data-in-s3-using-amazon-athena/
+* https://docs.aws.amazon.com/pt_br/athena/latest/ug/geospatial-example-queries.html
+* https://medium.com/@devopsglobaleli/introduction-17b4d0c592b6
