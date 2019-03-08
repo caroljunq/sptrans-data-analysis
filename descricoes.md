@@ -178,6 +178,14 @@ nGalera, precisava de uma ajuda pra ver se estou pensando de um jeito bacana. Me
 * Mesmas queries geográficas do SQL
 * Preço S3: 0,023 USD por GB
 
+## Amazon EMR
+* Plataforma de cluster que gerencia a execução de estruturas de Big Data ex: Spark, python, nodejs,
+* Conecta com S3
+* Gerenciamento do cluster YARn default
+
+### Links importantes
+* https://aws.amazon.com/pt/emr/features/spark/
+
 ### Links importantes
 * https://aws.amazon.com/pt/athena/pricing/
 * https://aws.amazon.com/pt/blogs/big-data/analyzing-data-in-s3-using-amazon-athena/
