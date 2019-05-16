@@ -1,0 +1,39 @@
+
+WITH ordered_traces AS (select * from traces order by bus_id, register_date)
+select bus_id, register_date, register_date - LAG(register_date) OVER (PARTITION BY bus_id ORDER BY bus_id, register_date) FROM ordered_traces;
+
+Tabela ordenada
+
+bus_id |      register_date      |    long    |    lat
+--------+-------------------------+------------+------------
+   111 | 2016-01-01 04:00:34     | -23.652967 | -46.776522
+   111 | 2016-01-01 04:00:36.113 | -23.652047 | -46.776865
+   111 | 2016-01-01 04:00:36.697 |  -23.65232 | -46.776375
+   222 | 2016-01-01 04:00:36.67  |   -23.6503 | -46.613433
+   222 | 2016-01-01 04:00:46.887 | -23.651065 | -46.612208
+   222 | 2016-01-01 04:00:46.887 | -23.651065 | -46.612208
+   222 | 2016-01-01 04:00:49.347 | -23.651398 | -46.612833
+
+// diferenças entre as linhas
+   bus_id |      register_date      |   ?column?
+--------+-------------------------+--------------
+   111 | 2016-01-01 04:00:34     |
+   111 | 2016-01-01 04:00:36.113 | 00:00:02.113
+   111 | 2016-01-01 04:00:36.697 | 00:00:00.584
+   222 | 2016-01-01 04:00:36.67  |
+   222 | 2016-01-01 04:00:46.887 | 00:00:10.217
+   222 | 2016-01-01 04:00:46.887 | 00:00:00
+   222 | 2016-01-01 04:00:49.347 | 00:00:02.46
+
+
+// tempo médio de diferença numa trajetória
+WITH ordered_traces AS (select * from traces order by bus_id, register_date),
+diffs AS (select bus_id, register_date, (register_date - LAG(register_date) OVER (PARTITION BY bus_id ORDER BY bus_id, register_date)) as difer FROM ordered_traces)
+select bus_id, avg(difer) from diffs group by bus_id;
+
+// diferença média para cada ônibus
+
+bus_id |       avg
+--------+-----------------
+   111 | 00:00:01.3485
+   222 | 00:00:04.225667
