@@ -1,0 +1,15 @@
+WITH ordered_traces AS
+(
+         SELECT   *
+         FROM     `testebigqurey.cloud_storage_data.traces`
+         ORDER BY bus_id,
+                  register_date), diffs AS
+(
+         SELECT   bus_id,
+                  register_date,
+                  UNIX_MICROS(register_date) - UNIX_MICROS(lag(register_date) OVER (partition BY bus_id ORDER BY bus_id, register_date)) AS difer
+         FROM     ordered_traces)
+SELECT   bus_id,
+         avg(difer)
+FROM     diffs
+GROUP BY bus_id;
