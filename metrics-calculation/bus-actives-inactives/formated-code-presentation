@@ -1,0 +1,46 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# código bonito "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df = df.withColumn(\"hour\", udf_get_hour(df[\"dtavl\"]))\n",
+    "df_hour_idavl = df.groupBy(\"hour\", \"idavl\").agg(collect_list(\"evento\").alias(\"list_events\"))\n",
+    "df_list_events = df_hour_idavl.withColumn(\"open\", udf_get_open(df_hour_idavl[\"list_events\"]))\n",
+    "df_pd = df_list_events.filter(\"open == true\").groupBy(\"hour\").agg(count(\"idavl\").alias(\"onibus\")).toPandas()\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "conda_python3",
+   "language": "python",
+   "name": "conda_python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
