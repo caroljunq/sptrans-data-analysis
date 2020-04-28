@@ -9,3 +9,8 @@
 * https://www.oreilly.com/content/how-do-i-configure-apache-spark-on-an-amazon-elastic-mapreduce-emr-cluster/
 * https://medium.com/@steveng/quick-tips-on-tweaking-spark-configuration-and-performance-on-emr-3d7acbb31b41
 * https://becominghuman.ai/real-world-python-workloads-on-spark-emr-clusters-3c6bda1a1350
+* https://databricks.com/blog/2019/12/05/processing-geospatial-data-at-scale-with-databricks.html
+* https://www.oreilly.com/radar/query-the-planet-geospatial-big-data-analytics-at-uber/
+* https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
+* http://dados.prefeitura.sp.gov.br/pt_PT/dataset/referencia-urbana-do-municipio-de-sao-paulo
+* http://dados.prefeitura.sp.gov.br/pt_PT/dataset/distritos/resource/9e75c2f7-5729-4398-8a83-b4640f072b5d?inner_span=True
