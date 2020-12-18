@@ -1,0 +1,215 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Combining MO and AL files to enrich MO with shape_id information, \n",
+    "# and delete records without a trip_id registered in AL file"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "a2842b9bbe994c9d816b0fd002d1e676",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "from pyspark import SparkConf\n",
+    "from pyspark import SparkContext\n",
+    "\n",
+    "spark_conf = (SparkConf().set(\"spark.speculation\", \"false\"))\n",
+    "sc = SparkContext.getOrCreate(conf = spark_conf)\n",
+    "\n",
+    "# spark = sparkSession\n",
+    "hadoop_conf = spark._jsc.hadoopConfiguration()\n",
+    "hadoop_conf.set(\"fs.s3a.impl\", \"org.apache.hadoop.fs.s3a.S3AFileSystem\")\n",
+    "hadoop_conf.set(\"mapreduce.fileoutputcommitter.algorithm.version\",\"2\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "5113612117944d9aa0f448bd27d3401a",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "19381346 18235210\n",
+      "19542228 18385300\n",
+      "18583434 17622015\n",
+      "17492844 16560630\n",
+      "19625290 18428187\n",
+      "19680078 18475749\n",
+      "19725834 18523974\n",
+      "19855438 18577969\n",
+      "19846448 18596342\n",
+      "18832814 17811480\n",
+      "17948111 16923105\n",
+      "18043141 16990722\n",
+      "18883080 17719681\n",
+      "19665453 18450039\n",
+      "19563537 18381536\n",
+      "19480608 18269796\n",
+      "18833620 17832181\n",
+      "17901777 16871715\n",
+      "19567697 18389942\n",
+      "19634098 18459838\n",
+      "19785741 18596607\n",
+      "19223432 18051123\n",
+      "16754975 15719670\n",
+      "18704148 17761693\n",
+      "17869407 16921001\n",
+      "19543783 18375335\n",
+      "19745005 18569325\n",
+      "19848537 18565776\n",
+      "19832265 18628360\n",
+      "19904904 18676523\n",
+      "18709110 17655188"
+     ]
+    }
+   ],
+   "source": [
+    "for day in range(1,32):\n",
+    "    # Reading AL file\n",
+    "    AL = spark.read.parquet(\"s3://mobility-traces-sp/aux-files/route-files-enriched/AL_1510\"+str(day)+\"/\")\n",
+    "\n",
+    "    # Reading MO file\n",
+    "    MO = spark.read.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/6-records-inside-sp-in-october-with-time-variation/MO_1510\"+str(day)+\"/\")\n",
+    "\n",
+    "    # Joining files by line_id. The inner join operation keeps only the records within both files\n",
+    "    # Dropping direction_id\n",
+    "    MO_within_AL = MO.join(AL,on=[\"line_id\"],how=\"inner\").drop(\"direction_id\")\n",
+    "    \n",
+    "    MO_within_AL.write.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/7-records-inside-sp-in-october-enriched-shapes/MO_1510\"+str(day)+\"/\")\n",
+    "    \n",
+    "    print(MO.count(),MO_within_AL.count())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "871781c3a6634428a275a4b562f17ddd",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# Results\n",
+    "# In each there was almost 6% reduction of numbers of records"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "PySpark",
+   "language": "",
+   "name": "pysparkkernel"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "python",
+    "version": 3
+   },
+   "mimetype": "text/x-python",
+   "name": "pyspark",
+   "pygments_lexer": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
