@@ -1,0 +1,65 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "a45c1056919d4d6db8ef2fd167bfc9a1",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# Dropping not useful columns\n",
+    "for day in range (1,32):\n",
+    "    traces = spark.read.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/12-speed-calculation-filtered/MO_1510\"+str(day)+\"/\")\n",
+    "    traces = traces.drop(\"direction\",\"shape_id\",\"min_distance\",\n",
+    "                         \"min_shape_sequence\",\"min_shape_coord_lat\",\"min_shape_coord_lon\",\"time_variation\")\n",
+    "    traces.write.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/13-speed-calculation-filtered-columns/MO_1510\"+str(day)+\"/\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "PySpark",
+   "language": "",
+   "name": "pysparkkernel"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "python",
+    "version": 3
+   },
+   "mimetype": "text/x-python",
+   "name": "pyspark",
+   "pygments_lexer": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
