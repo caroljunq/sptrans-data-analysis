@@ -1,0 +1,388 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "9c9731e2550e43cfa85f2a6b5b14b2e5",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Starting Spark application\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<tr><th>ID</th><th>YARN Application ID</th><th>Kind</th><th>State</th><th>Spark UI</th><th>Driver log</th><th>Current session?</th></tr><tr><td>3</td><td>application_1609603797915_0004</td><td>pyspark</td><td>idle</td><td><a target=\"_blank\" href=\"http://ip-172-31-82-61.ec2.internal:20888/proxy/application_1609603797915_0004/\" >Link</a></td><td><a target=\"_blank\" href=\"http://ip-172-31-92-168.ec2.internal:8042/node/containerlogs/container_1609603797915_0004_01_000001/livy\" >Link</a></td><td>✔</td></tr></table>"
+      ],
+      "text/plain": [
+       "<IPython.core.display.HTML object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "SparkSession available as 'spark'.\n"
+     ]
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "# Calculating speed for each vehicle in a day"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "7b7b6c1b10944e8e8d3b0ff19ec03440",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Collecting haversine\n",
+      "  Using cached https://files.pythonhosted.org/packages/f4/52/a13286844780c7b1740edbbee8a8f0524e2a6d51c068b59dda39a6a119f5/haversine-2.3.0-py2.py3-none-any.whl\n",
+      "Installing collected packages: haversine\n",
+      "Successfully installed haversine-2.3.0"
+     ]
+    }
+   ],
+   "source": [
+    "sc.install_pypi_package(\"haversine\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "5a444e7d9b5c4a06ad49e45c46f99eab",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "from haversine import haversine, Unit\n",
+    "import pyspark.sql.functions as F\n",
+    "from pyspark.sql.types import *\n",
+    "from pyspark.sql.window import Window\n",
+    "\n",
+    "# calculating speed for each register\n",
+    "def calculate_speed(lon1,lat1,lon2,lat2,time_variation):\n",
+    "    \n",
+    "    # if lon2 and lat2 are available\n",
+    "    if lon2 and lat2 and time_variation != 0:\n",
+    "        coord_1 = float(lat1),float(lon1)\n",
+    "        coord_2 = float(lat2),float(lon2)\n",
+    "        distance = haversine(coord_1,coord_2,unit=Unit.METERS)\n",
+    "        \n",
+    "        # converting the speed from m/s to km/h multiplying by 3.6\n",
+    "        return (distance/float(time_variation)) * 3.6\n",
+    "    \n",
+    "    # it there is no lat and long or time_variation = 0 \n",
+    "    \n",
+    "    else:\n",
+    "        if time_variation == 0:\n",
+    "            return 0\n",
+    "        else:\n",
+    "            return -1\n",
+    "    \n",
+    "get_speed_udf = F.udf(calculate_speed, FloatType())\n",
+    "\n",
+    "window = Window.partitionBy(\"id_avl\",\"line_id\").orderBy('dt_avl') \n",
+    "\n",
+    "for day in range(1,32):\n",
+    "    \n",
+    "    # reading traces\n",
+    "    traces = spark.read.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/9-map-matching-filtered/MO_1510\"+str(day)+\"/\")\n",
+    "    \n",
+    "    # getting time variation\n",
+    "    traces_time_variation = traces.select(\"*\", (F.to_timestamp('dt_avl').cast(LongType()) - F.to_timestamp(F.lag(\"dt_avl\").over(window)).cast(LongType())).alias(\"time_variation\"))\n",
+    "    \n",
+    "    # getting speed based on bus location\n",
+    "    traces_speed_bus_location = traces_time_variation.select(\"*\", get_speed_udf(F.col(\"longitude\"),F.col(\"latitude\"),F.lag(F.col(\"longitude\")).over(window),F.lag(F.col(\"latitude\")).over(window),F.col(\"time_variation\")).alias(\"speed\"))\n",
+    "    \n",
+    "    traces_speed_bus_location.write.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/10-speed-calculation-based-bus-location/MO_1510\"+str(day)+\"/\")\n",
+    "\n",
+    "    \n",
+    "    # getting speed based on shape location\n",
+    "    traces_speed_shape_location = traces_time_variation.select(\"*\", get_speed_udf(F.col(\"min_shape_coord_lon\"),F.col(\"min_shape_coord_lat\"),F.lag(F.col(\"min_shape_coord_lon\")).over(window),F.lag(F.col(\"min_shape_coord_lat\")).over(window),F.col(\"time_variation\")).alias(\"speed\"))\n",
+    "    \n",
+    "    traces_speed_shape_location.write.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/11-speed-calculation-based-shape-location/MO_1510\"+str(day)+\"/\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "0a667f45b5434909b339b8769285c194",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "VBox()"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Starting Spark application\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<table>\n",
+       "<tr><th>ID</th><th>YARN Application ID</th><th>Kind</th><th>State</th><th>Spark UI</th><th>Driver log</th><th>Current session?</th></tr><tr><td>5</td><td>application_1609603797915_0006</td><td>pyspark</td><td>idle</td><td><a target=\"_blank\" href=\"http://ip-172-31-82-61.ec2.internal:20888/proxy/application_1609603797915_0006/\" >Link</a></td><td><a target=\"_blank\" href=\"http://ip-172-31-94-51.ec2.internal:8042/node/containerlogs/container_1609603797915_0006_01_000001/livy\" >Link</a></td><td>✔</td></tr></table>"
+      ],
+      "text/plain": [
+       "<IPython.core.display.HTML object>"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "SparkSession available as 'spark'.\n"
+     ]
+    },
+    {
+     "data": {
+      "application/vnd.jupyter.widget-view+json": {
+       "model_id": "",
+       "version_major": 2,
+       "version_minor": 0
+      },
+      "text/plain": [
+       "FloatProgress(value=0.0, bar_style='info', description='Progress:', layout=Layout(height='25px', width='50%'),…"
+      ]
+     },
+     "metadata": {},
+     "output_type": "display_data"
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Collecting boto3\n",
+      "  Using cached https://files.pythonhosted.org/packages/28/78/4067ce89180daf0b2027df4b3e4c4734d73b99c3a664d262a4c4d5ac1021/boto3-1.16.47-py2.py3-none-any.whl\n",
+      "Collecting botocore<1.20.0,>=1.19.47 (from boto3)\n",
+      "  Using cached https://files.pythonhosted.org/packages/8f/4a/16ffdfc33d93f02604ae9ed1ddb6369030b6f61b583f31dc84e0d0da05c1/botocore-1.19.47-py2.py3-none-any.whl\n",
+      "Requirement already satisfied: jmespath<1.0.0,>=0.7.1 in /usr/local/lib/python3.7/site-packages (from boto3)\n",
+      "Collecting s3transfer<0.4.0,>=0.3.0 (from boto3)\n",
+      "  Using cached https://files.pythonhosted.org/packages/69/79/e6afb3d8b0b4e96cefbdc690f741d7dd24547ff1f94240c997a26fa908d3/s3transfer-0.3.3-py2.py3-none-any.whl\n",
+      "Collecting python-dateutil<3.0.0,>=2.1 (from botocore<1.20.0,>=1.19.47->boto3)\n",
+      "  Using cached https://files.pythonhosted.org/packages/d4/70/d60450c3dd48ef87586924207ae8907090de0b306af2bce5d134d78615cb/python_dateutil-2.8.1-py2.py3-none-any.whl\n",
+      "Collecting urllib3<1.27,>=1.25.4; python_version != \"3.4\" (from botocore<1.20.0,>=1.19.47->boto3)\n",
+      "  Using cached https://files.pythonhosted.org/packages/f5/71/45d36a8df68f3ebb098d6861b2c017f3d094538c0fb98fa61d4dc43e69b9/urllib3-1.26.2-py2.py3-none-any.whl\n",
+      "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.7/site-packages (from python-dateutil<3.0.0,>=2.1->botocore<1.20.0,>=1.19.47->boto3)\n",
+      "Installing collected packages: python-dateutil, urllib3, botocore, s3transfer, boto3\n",
+      "Successfully installed boto3-1.16.47 botocore-1.19.47 python-dateutil-2.8.1 s3transfer-0.3.3 urllib3-1.26.2"
+     ]
+    }
+   ],
+   "source": [
+    "sc.install_pypi_package(\"boto3\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import pyspark.sql.functions as F\n",
+    "#Statistics from each method to calculate speed\n",
+    "csv_out_shape_location = \"day,mean,min,max,stddev,0.0625,0.125,0.25,0.5,0.75\\n\"\n",
+    "csv_out_bus_location = \"day,mean,min,max,stddev,0.0625,0.125,0.25,0.5,0.75\\n\"\n",
+    "\n",
+    "\n",
+    "for day in range(1,32):\n",
+    "    \n",
+    "    # getting statistics from the speed calculated with bus location\n",
+    "    traces_bus_location = spark.read.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/10-speed-calculation-based-bus-location/MO_1510\"+str(day)+\"/\")\n",
+    "\n",
+    "    stats_bus_location = traces_bus_location.agg(F.mean('speed').alias('mean'),\n",
+    "                       F.min('speed').alias('min'),\n",
+    "                       F.max('speed').alias('max'),\n",
+    "                       F.stddev('speed').alias(\"stddev\")).collect()\n",
+    "\n",
+    "\n",
+    "    quantiles_bus_location = traces_bus_location.approxQuantile(\"speed\", [0.0625,0.125,0.25,0.5,0.75], 0.0001)\n",
+    "\n",
+    "    csv_out_bus_location += \"{},{},{},{},{},{},{},{},{},{}\"\\\n",
+    "        .format(\"MO_1510\"+str(day),stats_bus_location[0][\"mean\"],stats_bus_location[0][\"min\"],stats_bus_location[0][\"max\"],\n",
+    "            stats_bus_location[0][\"stddev\"],quantiles_bus_location[0],quantiles_bus_location[1],\n",
+    "                quantiles_bus_location[2],quantiles_bus_location[3],quantiles_bus_location[4]\n",
+    "        ) + \"\\n\"\n",
+    "    \n",
+    "    # getting statistics from the speed calculated with shape location\n",
+    "    traces_shape_location = spark.read.parquet(\"s3://mobility-traces-sp/processed-data-avl-date/11-speed-calculation-based-shape-location/MO_1510\"+str(day)+\"/\")\n",
+    "\n",
+    "    stats_shape_location = traces_shape_location.agg(F.mean('speed').alias('mean'),\n",
+    "                       F.min('speed').alias('min'),\n",
+    "                       F.max('speed').alias('max'),\n",
+    "                       F.stddev('speed').alias(\"stddev\")).collect()\n",
+    "\n",
+    "\n",
+    "    quantiles_shape_location = traces_shape_location.approxQuantile(\"speed\", [0.0625,0.125,0.25,0.5,0.75], 0.0001)\n",
+    "    \n",
+    "    csv_out_shape_location += \"{},{},{},{},{},{},{},{},{},{}\"\\\n",
+    "        .format(\"MO_1510\"+str(day),stats_shape_location[0][\"mean\"],stats_shape_location[0][\"min\"],stats_shape_location[0][\"max\"],\n",
+    "            stats_shape_location[0][\"stddev\"],quantiles_shape_location[0],quantiles_shape_location[1],\n",
+    "                quantiles_shape_location[2],quantiles_shape_location[3],quantiles_shape_location[4]\n",
+    "        ) + \"\\n\"\n",
+    "\n",
+    "import boto3   \n",
+    "s3 = boto3.client('s3')\n",
+    "\n",
+    "# writing results in S3\n",
+    "s3.put_object(Body=bytes(csv_out_bus_location,\"utf-8\"), Bucket='mobility-traces-sp', Key='statistics/exploring-data/11-speed_analysis_bus_location.csv')\n",
+    "s3.put_object(Body=bytes(csv_out_shape_location,\"utf-8\"), Bucket='mobility-traces-sp', Key='statistics/exploring-data/12-speed_analysis_shape_location.csv')\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "PySpark",
+   "language": "",
+   "name": "pysparkkernel"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "python",
+    "version": 3
+   },
+   "mimetype": "text/x-python",
+   "name": "pyspark",
+   "pygments_lexer": "python3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
