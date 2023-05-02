@@ -1,4 +1,4 @@
-# sptrans-data-analysis
+# CHARACTERIZATION OF A BUS MOBILITY DATASET FROM THE CITY OF SÃO PAULO
 
 - **Master Degree project** in Computer Networks and Distributed System
 - **About this repository:** This repository contains all codes and Spark snippets used during the project to pre-process, and extract metrics from the Sao Paulo buses dataset. The data engineering methods applied here could be applied in similar datasets.
